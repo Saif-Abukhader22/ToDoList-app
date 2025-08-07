@@ -5,6 +5,7 @@ from models import Todo  # ✅ SQLAlchemy model
 from schemas import Todo as TodoSchema  # ✅ Pydantic schema for response
 from pydantic import BaseModel
 from typing import List
+from schemas import TodoCreate  
 from fastapi.middleware.cors import CORSMiddleware
 #Cross-Origin Resource Sharing : If your frontend and backend run on different origins 
 #(domains or ports), the browser won’t let them talk unless the backend says it's allowed.
@@ -42,8 +43,9 @@ def get_todos(db: Session = Depends(get_db)):
     return db.query(Todo).all()
 
 # Route to add a todo
+
 @app.post("/todos", response_model=TodoSchema)
-def add_todo(todo: TodoSchema, db: Session = Depends(get_db)):
+def add_todo(todo: TodoCreate, db: Session = Depends(get_db)):
     new_todo = Todo(title=todo.title, done=todo.done)
     db.add(new_todo)
     db.commit()

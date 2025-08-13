@@ -1,0 +1,61 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Put custom component styles in the components layer */
+
+@layer components {
+    .input {
+        @apply w-full rounded-xl border border-gray-300 px-3 py-2 outline-none bg-white text-slate-900;
+    }
+    .btn {
+        @apply rounded-xl px-4 py-2 font-medium transition;
+    }
+    .btn-primary {
+        @apply bg-blue-600 text-white
+    }
+    .btn-muted {
+        @apply bg-gray-100 text-gray-700
+    }
+    .card {
+        @apply rounded-2xl border border-gray-200 bg-white/80 backdrop-blur shadow;
+    }
+    .badge {
+        @apply inline-flex items-center gap-1 rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-700;
+    }
+    .checkbox {
+        @apply h-4 w-4 rounded border-gray-300 text-blue-600;
+    }
+    /* Pseudo-class states (use real CSS selectors) */
+    .input:focus {
+        @apply ring-4 ring-black/5 border-gray-400;
+    }
+    .btn:active {
+        @apply scale-95;
+    }
+    .checkbox:focus {
+        @apply ring-2 ring-blue-500;
+    }
+    /* Dark mode (scope with `.dark` on <html>) */
+    .dark .input {
+        @apply bg-slate-800 border-slate-700 text-slate-100;
+    }
+    .dark .input:focus {
+        @apply ring-white/5 border-slate-600;
+    }
+    .dark .btn-muted {
+        @apply bg-slate-700 text-slate-100
+    }
+    .dark .card {
+        @apply border-slate-700 bg-slate-900/70;
+    }
+    .dark .badge {
+        @apply bg-slate-700 text-slate-100;
+    }
+    .dark .checkbox {
+        @apply border-slate-600;
+    }
+    .dark .checkbox:focus {
+        @apply ring-blue-400;
+    }
+}

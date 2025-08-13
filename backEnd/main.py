@@ -1,74 +1,96 @@
-from fastapi import FastAPI, Depends, HTTPException
-from sqlalchemy.orm import Session
-from database import SessionLocal, engine, Base
-from models import Todo  # ✅ SQLAlchemy model
-from schemas import Todo as TodoSchema  # ✅ Pydantic schema for response
-from pydantic import BaseModel
+# backend/main.py
 from typing import List
-from schemas import TodoCreate  
+from fastapi import FastAPI, Depends, HTTPException, status, Response
 from fastapi.middleware.cors import CORSMiddleware
-#Cross-Origin Resource Sharing : If your frontend and backend run on different origins 
-#(domains or ports), the browser won’t let them talk unless the backend says it's allowed.
+from sqlalchemy.orm import Session
+
+from database import Base, engine
+from models import Todo as TodoModel, User
+from schemas import Todo as TodoSchema, TodoCreate, TodoUpdate
+from auth import router as auth_router
+from deps import get_db, get_current_user
 
 app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins for now
+    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
     allow_credentials=True,
     allow_methods=["*"],
-    allow_headers=["*"],
+    allow_headers=["Authorization", "Content-Type"],
 )
 
-
-
 Base.metadata.create_all(bind=engine)
+app.include_router(auth_router)
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+@app.get("/health")
+def health():
+    return {"ok": True}
 
-
-
-
-# In-memory list to store todos
-todos: List[Todo] = [] 
-
-# Route to get all todos
+# ---------- Todos ----------
 @app.get("/todos", response_model=List[TodoSchema])
-def get_todos(db: Session = Depends(get_db)):
-    return db.query(Todo).all()
+def get_todos(
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    """Return only the current user's todos."""
+    rows = db.query(TodoModel).filter(TodoModel.user_id == user.id).all()
+    # Return plain dicts (v1/v2 compatible)
+    return [{"id": t.id, "title": t.title, "done": t.done} for t in rows]
 
-# Route to add a todo
-
-@app.post("/todos", response_model=TodoSchema)
-def add_todo(todo: TodoCreate, db: Session = Depends(get_db)):
-    new_todo = Todo(title=todo.title, done=todo.done)
+@app.post("/todos", response_model=TodoSchema, status_code=status.HTTP_201_CREATED)
+def add_todo(
+    todo: TodoCreate,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    """Create a todo for the current user."""
+    new_todo = TodoModel(title=todo.title, done=todo.done, user_id=user.id)
     db.add(new_todo)
     db.commit()
     db.refresh(new_todo)
-    return new_todo
+    # Return plain dict
+    return {"id": new_todo.id, "title": new_todo.title, "done": new_todo.done}
 
-@app.delete("/todos/{todo_id}")
-def delete_todo(todo_id: int, db: Session = Depends(get_db)):
-    todo = db.query(Todo).filter(Todo.id == todo_id).first()
-    if todo:
-        db.delete(todo)
-        db.commit()
-        return {"message": "Deleted"}
-    return {"error": "Todo not found"}
+@app.patch("/todos/{todo_id}", response_model=TodoSchema)
+def update_todo(
+    todo_id: int,
+    body: TodoUpdate,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    """Update the current user's todo."""
+    todo = db.query(TodoModel).filter(
+        TodoModel.id == todo_id,
+        TodoModel.user_id == user.id
+    ).first()
+    if not todo:
+        raise HTTPException(status_code=404, detail="Todo not found")
 
-@app.patch("/todos/{todo_id}")
-def update_todo(todo_id: int, updated: TodoSchema, db: Session = Depends(get_db)):
-    todo = db.query(Todo).filter(Todo.id == todo_id).first()
-    if todo:
-        todo.title = updated.title
-        todo.done = updated.done
-        db.commit()
-        db.refresh(todo)
-        return todo
-    return {"error": "Todo not found"}
+    if body.title is not None:
+        todo.title = body.title
+    if body.done is not None:
+        todo.done = body.done
 
+    db.commit()
+    db.refresh(todo)
+    # Return plain dict
+    return {"id": todo.id, "title": todo.title, "done": todo.done}
+
+@app.delete("/todos/{todo_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_todo(
+    todo_id: int,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    """Delete the current user's todo."""
+    todo = db.query(TodoModel).filter(
+        TodoModel.id == todo_id,
+        TodoModel.user_id == user.id
+    ).first()
+    if not todo:
+        raise HTTPException(status_code=404, detail="Todo not found")
+
+    db.delete(todo)
+    db.commit()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

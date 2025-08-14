@@ -3,14 +3,19 @@ from typing import List
 from fastapi import FastAPI, Depends, HTTPException, status, Response
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
-
-from database import Base, engine
-from models import Todo as TodoModel, User
-from schemas import Todo as TodoSchema, TodoCreate, TodoUpdate
-from auth import router as auth_router
-from deps import get_db, get_current_user
-
+from backEnd.database import Base, engine
+from .schemas import Todo as TodoSchema, TodoCreate, TodoUpdate
+from .auth import router as auth_router
+from .deps import get_db, get_current_user
+from . import models
+from .database import engine, Base
+from backEnd.schemas import User
+from .models import Todo as TodoModel 
+from fastapi.middleware.cors import CORSMiddleware
 app = FastAPI()
+
+
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -20,7 +25,14 @@ app.add_middleware(
     allow_headers=["Authorization", "Content-Type"],
 )
 
-Base.metadata.create_all(bind=engine)
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("backend.main:app", host="0.0.0.0", port=8080, reload=False)
+
+
+
+models.Base.metadata.create_all(bind=engine)
 app.include_router(auth_router)
 
 @app.get("/health")
@@ -31,7 +43,7 @@ def health():
 @app.get("/todos", response_model=List[TodoSchema])
 def get_todos(
     db: Session = Depends(get_db),
-    user: User = Depends(get_current_user),
+    User: User = Depends(get_current_user),
 ):
     """Return only the current user's todos."""
     rows = db.query(TodoModel).filter(TodoModel.user_id == user.id).all()
@@ -49,7 +61,7 @@ def add_todo(
     db.add(new_todo)
     db.commit()
     db.refresh(new_todo)
-    # Return plain dict
+
     return {"id": new_todo.id, "title": new_todo.title, "done": new_todo.done}
 
 @app.patch("/todos/{todo_id}", response_model=TodoSchema)
@@ -81,7 +93,7 @@ def update_todo(
 def delete_todo(
     todo_id: int,
     db: Session = Depends(get_db),
-    user: User = Depends(get_current_user),
+    User: User = Depends(get_current_user),
 ):
     """Delete the current user's todo."""
     todo = db.query(TodoModel).filter(

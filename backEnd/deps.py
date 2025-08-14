@@ -1,10 +1,10 @@
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
-from database import SessionLocal
-from models import User
-from auth_utils import decode_token  # we'll make this file next
-
+from .database import SessionLocal
+from . import models
+from .auth_utils import decode_token 
+from .models import User
 # This tells FastAPI:
 # "Tokens will be sent using OAuth2 Bearer in the header,
 # and users can get them from /auth/login"

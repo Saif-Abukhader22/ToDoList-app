@@ -3,6 +3,12 @@
 from typing import Optional
 from pydantic import BaseModel, EmailStr, ConfigDict
 
+class User(BaseModel):
+    id: int
+    email: EmailStr
+
+    class Config:
+        from_attributes = True 
 
 class UserCreate(BaseModel):
     email: EmailStr

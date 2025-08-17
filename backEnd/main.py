@@ -42,7 +42,7 @@ app.include_router(auth_router)
 def health():
     return {"ok": True}
 
-# ---------- Todos ----------
+
 @app.get("/todos", response_model=List[TodoSchema])
 def get_todos(
     db: Session = Depends(get_db),

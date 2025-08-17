@@ -9,7 +9,7 @@ from .auth_utils import hash_password, verify_password, create_access_token
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
-@router.post("/signup", response_model=UserOut, status_code=status.HTTP_201_CREATED)
+api.post("/signup", response_model=UserOut, status_code=status.HTTP_201_CREATED)
 def signup(body: UserCreate, db: Session = Depends(get_db)):
     validate_password_or_400(body.password)
 
@@ -25,7 +25,7 @@ def signup(body: UserCreate, db: Session = Depends(get_db)):
     return user   # Let FastAPI + Pydantic serialize it to JSON
 
 
-@router.post("/login", response_model=Token)
+api.post("/login", response_model=Token)
 def login(body: UserLogin, db: Session = Depends(get_db)):
     email = body.email.strip().lower()
     user = db.query(models.User).filter(models.User.email == email).first()

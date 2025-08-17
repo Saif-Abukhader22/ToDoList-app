@@ -1,4 +1,3 @@
-# backend/main.py
 from typing import List
 from fastapi import FastAPI, Depends, HTTPException, status, Response
 from fastapi.middleware.cors import CORSMiddleware

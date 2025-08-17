@@ -21,5 +21,3 @@ engine = create_engine(DATABASE_URL, pool_pre_ping=True) #create connection with
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False) # This builds a factory to create new Session objects.
 
 Base = declarative_base()
-
-a

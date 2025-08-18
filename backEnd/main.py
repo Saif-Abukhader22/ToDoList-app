@@ -15,6 +15,8 @@ from .auth import router as auth_router
 from .deps import get_db, get_current_user
 from backEnd.schemas import User  # your Pydantic UserOut/User type
 
+from .ai_routes import router as ai_router
+
 app = FastAPI()
 
 ALLOWED_ORIGINS = [
@@ -31,12 +33,13 @@ app.add_middleware(
     max_age=86400,
 )
 
-# optional: guarantee any stray OPTIONS returns 204 so preflight can't 400
+app.include_router(ai_router)
+
+
 @app.options("/{path:path}")
 def cors_preflight(path: str):
     return Response(status_code=204)
 
-# --- DB + routers ---
 models.Base.metadata.create_all(bind=engine)
 app.include_router(auth_router)
 

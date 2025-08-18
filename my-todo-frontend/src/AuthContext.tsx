@@ -52,8 +52,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
 const signup = async (email: string, password: string) => {
   try {
-    await api.post("/auth/signup", { email, password });  // no token returned
-    await login(email, password);  // immediately log in to get token
+    await api.post("/auth/signup", { email, password }); 
+    await login(email, password);  
   } catch (err) {
     throw err instanceof Error ? err : new Error("Signup failed");
   }

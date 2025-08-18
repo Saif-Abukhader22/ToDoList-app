@@ -1,4 +1,3 @@
-// src/AuthContext.tsx
 import { createContext, useContext, useMemo, useState } from "react";
 import { api } from "./api";
 
@@ -17,7 +16,7 @@ type AuthCtx = {
 
 const Ctx = createContext<AuthCtx | undefined>(undefined);
 
-/** Hook to consume the auth context */
+
 // eslint-disable-next-line react-refresh/only-export-components
 export function useAuth(): AuthCtx {
   const ctx = useContext(Ctx);
@@ -26,9 +25,9 @@ export function useAuth(): AuthCtx {
 }
 
 
-/** Provider that wraps your app (see App.tsx) */
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  // initialize from localStorage so refresh keeps you logged in\
+
   const [token, setToken] = useState<string | null>(() => localStorage.getItem("token"));
 
   /** Log in: call backend, store JWT */
@@ -40,16 +39,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   /** Sign up: create user, then log in immediately */
 
+// const signup = async (email: string, password: string) => {
+//   try {
+//     const { data } = await api.post<TokenResponse>("/auth/signup", { email, password });
+//     localStorage.setItem("token", data.access_token);
+//     setToken(data.access_token);    
+//   } catch (err) {
+  
+//     throw err instanceof Error ? err : new Error("Signup failed");
+//   }
+// };
+
 const signup = async (email: string, password: string) => {
   try {
-    const { data } = await api.post<TokenResponse>("/auth/signup", { email, password });
-    localStorage.setItem("token", data.access_token);
-    setToken(data.access_token);          // you're now authenticated
+    await api.post("/auth/signup", { email, password });  // no token returned
+    await login(email, password);  // immediately log in to get token
   } catch (err) {
-    // ... same error handling you already had
     throw err instanceof Error ? err : new Error("Signup failed");
   }
 };
+
 
   /** Log out: clear JWT */
   const logout = () => {

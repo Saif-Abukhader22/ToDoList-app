@@ -18,14 +18,16 @@ import uvicorn
 app = FastAPI()
 
 app.add_middleware(
+    CORSMiddleware,
     allow_origins=[
+        "https://hammerhead-app-n3uaa.ondigitalocean.app",  # your DO frontend
         "http://localhost:5173",
         "http://127.0.0.1:5173",
-        "https://hammerhead-app-n3uaa.ondigitalocean.app",  # your frontend on DigitalOcean
     ],
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["Authorization", "Content-Type"],
+    allow_methods=["*"],  
+    allow_headers=["*"],  
+    max_age=86400,        
 )
 
 

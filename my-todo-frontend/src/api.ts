@@ -20,6 +20,8 @@ api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
     headers.set("Authorization", `Bearer ${token}`);
     config.headers = headers;
   }
+  console.log("VITE_API_URL =", import.meta.env.VITE_API_URL);
+
 
   return config;
 });

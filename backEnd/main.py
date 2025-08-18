@@ -19,17 +19,20 @@ app = FastAPI()
 
 from fastapi.middleware.cors import CORSMiddleware
 
+FRONTEND_ORIGINS = [
+    "https://starfish-app-ms4wl.ondigitalocean.app",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-        "https://hammerhead-app-n3uaa.ondigitalocean.app",
-    ],
+    allow_origins=FRONTEND_ORIGINS,
     allow_credentials=True,
-    allow_methods=["*"],   # allow POST, OPTIONS, etc
-    allow_headers=["*"],   # allow Content-Type, Authorization, etc
-)
+    allow_methods=["*"],
+    allow_headers=["*"], 
+)ow_headers=["*"],   
+
 
 
 

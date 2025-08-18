@@ -26,6 +26,7 @@ ALLOWED_ORIGINS = [
 ]
 app.add_middleware(
     CORSMiddleware,
+    allow_origins=FRONTEND_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],   # POST/GET/PATCH/DELETE/OPTIONS
     allow_headers=["*"],   # let browser send content-type, authorization, etc.

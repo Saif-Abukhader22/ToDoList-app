@@ -17,7 +17,6 @@ from backEnd.schemas import User  # your Pydantic UserOut/User type
 
 app = FastAPI()
 
-# --- CORS: allow your deployed frontend and local dev ---
 ALLOWED_ORIGINS = [
     "https://starfish-app-ms4wl.ondigitalocean.app",  # <-- your React site
     "http://localhost:5173",

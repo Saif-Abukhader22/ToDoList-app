@@ -262,7 +262,7 @@ export default function Home() {
           </div>
 
           <footer className="py-8 text-center text-xs text-slate-500 dark:text-slate-400">
-            Built with ❤️ using Tailwind
+            © 2025 All rights reserved.
           </footer>
         </main>
       </div>

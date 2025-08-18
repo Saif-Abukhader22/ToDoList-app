@@ -45,7 +45,7 @@ def health():
 @app.get("/todos", response_model=List[TodoSchema])
 def get_todos(
     db: Session = Depends(get_db),
-    User: User = Depends(get_current_user),
+    user: User = Depends(get_current_user),
 ):
     """Return only the current user's todos."""
     rows = db.query(TodoModel).filter(TodoModel.user_id == user.id).all()
@@ -95,7 +95,7 @@ def update_todo(
 def delete_todo(
     todo_id: int,
     db: Session = Depends(get_db),
-    User: User = Depends(get_current_user),
+    user: User = Depends(get_current_user),
 ):
     """Delete the current user's todo."""
     todo = db.query(TodoModel).filter(

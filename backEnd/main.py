@@ -17,19 +17,20 @@ import uvicorn
 
 app = FastAPI()
 
+from fastapi.middleware.cors import CORSMiddleware
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "https://hammerhead-app-n3uaa.ondigitalocean.app",
-        "https://hammerhead-backEnd-n3uaa.ondigitalocean.app",
         "http://localhost:5173",
         "http://127.0.0.1:5173",
+        "https://hammerhead-app-n3uaa.ondigitalocean.app",
     ],
     allow_credentials=True,
-    allow_methods=["*"],  
-    allow_headers=["*"],  
-    max_age=86400,        
+    allow_methods=["*"],   # allow POST, OPTIONS, etc
+    allow_headers=["*"],   # allow Content-Type, Authorization, etc
 )
+
 
 
 

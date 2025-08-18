@@ -21,6 +21,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "https://hammerhead-app-n3uaa.ondigitalocean.app",
+        "https://hammerhead-backEnd-n3uaa.ondigitalocean.app",
         "http://localhost:5173",
         "http://127.0.0.1:5173",
     ],

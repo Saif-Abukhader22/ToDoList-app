@@ -12,6 +12,10 @@ export default function Home() {
   const [newTitle, setNewTitle] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
 
+  // AI state
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiSuggestion, setAiSuggestion] = useState("");
+
   // ui
   const [dark, setDark] = useState<boolean>(false);
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
@@ -48,7 +52,6 @@ export default function Home() {
       .catch((err) => {
         console.error("Failed to fetch todos", err);
         if (err?.response?.status === 401) {
-          // token missing/expired → force relogin
           localStorage.removeItem("token");
           nav("/login", { replace: true });
         }
@@ -90,7 +93,7 @@ export default function Home() {
     completed.forEach((t) => deleteTodo(t.id));
   };
 
-  // filtering + stats
+  // Filtering + stats
   const filtered = useMemo(() => {
     let list = todos;
     if (filter === "active") list = list.filter((t) => !t.done);
@@ -104,38 +107,31 @@ export default function Home() {
     return { total, done, remaining: total - done };
   }, [todos]);
 
+  // 🔹 Call AI backend
+  const askAI = async () => {
+    setAiLoading(true);
+    setAiSuggestion("");
+    try {
+      const { data } = await api.post("/ai/chat", {
+        messages: [
+          { role: "system", content: "You are a helpful task assistant." },
+          { role: "user", content: "Suggest 3 tasks I should do today." }
+        ]
+      });
+      setAiSuggestion(data.message);
+    } catch (err) {
+      console.error("AI request failed", err);
+      setAiSuggestion("Error: Could not get AI response.");
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 text-slate-900
                     dark:from-slate-950 dark:via-slate-950 dark:to-slate-900 dark:text-slate-100">
 
-      {/* Mobile top bar */}
-      <div className="lg:hidden sticky top-0 z-30 flex items-center justify-between border-b border-gray-200 bg-white/80 px-4 py-3 backdrop-blur
-                      dark:border-slate-800 dark:bg-slate-900/80">
-        <button
-          onClick={() => setSidebarOpen((s) => !s)}
-          className="btn btn-muted"
-          aria-expanded={sidebarOpen}
-          aria-controls="sidebar"
-        >
-          {sidebarOpen ? "Close" : "Menu"}
-        </button>
-        <h1 className="text-lg font-semibold">
-          <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">To-Do</span> List
-        </h1>
-        <div className="flex gap-2">
-          <button onClick={() => setDark((d) => !d)} className="btn btn-muted">
-            {dark ? "Light" : "Dark"}
-          </button>
-          <button
-            onClick={() => { logout(); nav("/login", { replace: true }); }}
-            className="btn btn-muted"
-          >
-            Logout
-          </button>
-        </div>
-      </div>
-
-      {/* Shell: sidebar + main */}
+      {/* Sidebar + Main */}
       <div className="mx-auto grid max-w-6xl grid-cols-1 lg:grid-cols-[260px_minmax(0,1fr)]">
         {/* Sidebar */}
         <aside
@@ -148,64 +144,15 @@ export default function Home() {
                 <div className="font-semibold text-xl">
                   <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">To-Do</span>
                 </div>
-                <div className="flex gap-2">
-                  <button onClick={() => setDark((d) => !d)} className="btn btn-muted">
-                    {dark ? "🌙" : "☀️"}
-                  </button>
-                  <button
-                    onClick={() => { logout(); nav("/login", { replace: true }); }}
-                    className="btn btn-muted"
-                  >
-                    Logout
-                  </button>
-                </div>
               </div>
-
-              <nav className="space-y-1">
-                <button
-                  onClick={() => setFilter("all")}
-                  className={`w-full rounded-xl px-3 py-2 text-left transition ${
-                    filter === "all" ? "bg-blue-600 text-white dark:bg-blue-500" : "hover:bg-gray-100 dark:hover:bg-slate-800"
-                  }`}
-                >
-                  All tasks
-                </button>
-                <button
-                  onClick={() => setFilter("active")}
-                  className={`w-full rounded-xl px-3 py-2 text-left transition ${
-                    filter === "active" ? "bg-blue-600 text-white dark:bg-blue-500" : "hover:bg-gray-100 dark:hover:bg-slate-800"
-                  }`}
-                >
-                  Active
-                </button>
-                <button
-                  onClick={() => setFilter("done")}
-                  className={`w-full rounded-xl px-3 py-2 text-left transition ${
-                    filter === "done" ? "bg-blue-600 text-white dark:bg-blue-500" : "hover:bg-gray-100 dark:hover:bg-slate-800"
-                  }`}
-                >
-                  Completed
-                </button>
-              </nav>
-
-              <div className="mt-6 grid grid-cols-3 gap-2 text-center">
-                <div className="card p-3">
-                  <div className="text-xs opacity-70">Total</div>
-                  <div className="text-lg font-semibold">{stats.total}</div>
-                </div>
-                <div className="card p-3">
-                  <div className="text-xs opacity-70">Done</div>
-                  <div className="text-lg font-semibold">{stats.done}</div>
-                </div>
-                <div className="card p-3">
-                  <div className="text-xs opacity-70">Left</div>
-                  <div className="text-lg font-semibold">{stats.remaining}</div>
-                </div>
-              </div>
-
-              <button onClick={clearCompleted} className="btn btn-muted mt-6 w-full">
-                Clear completed
+              <button onClick={askAI} className="btn btn-primary w-full mb-4">
+                {aiLoading ? "Thinking..." : "✨ Ask AI for tasks"}
               </button>
+              {aiSuggestion && (
+                <div className="card mt-2 p-3 text-sm whitespace-pre-wrap">
+                  {aiSuggestion}
+                </div>
+              )}
             </div>
           </div>
         </aside>
@@ -225,18 +172,10 @@ export default function Home() {
               <button onClick={addTodo} className="btn btn-primary">Add</button>
             </div>
 
-            <div className="mt-4 text-sm opacity-70">
-              Showing: <span className="badge capitalize">{filter}</span>
-            </div>
-
             {/* List */}
             <ul className="mt-4 space-y-2">
               {filtered.map((todo) => (
-                <li
-                  key={todo.id}
-                  className="group flex items-center justify-between rounded-xl border border-gray-200 bg-white px-3 py-2 shadow-sm transition hover:shadow
-                             dark:border-slate-700 dark:bg-slate-900"
-                >
+                <li key={todo.id} className="group flex items-center justify-between rounded-xl border p-2">
                   <label className="flex w-full items-center gap-3">
                     <input
                       type="checkbox"
@@ -244,18 +183,9 @@ export default function Home() {
                       onChange={() => toggleTodo(todo.id)}
                       className="checkbox"
                     />
-                    <span className={todo.done ? "line-through text-slate-400" : "text-slate-800 dark:text-slate-100"}>
-                      {todo.title}
-                    </span>
+                    <span className={todo.done ? "line-through" : ""}>{todo.title}</span>
                   </label>
-                  <button
-                    onClick={() => deleteTodo(todo.id)}
-                    className="ml-3 rounded-lg px-2 py-1 text-sm font-semibold text-red-600 opacity-0 transition group-hover:opacity-100 hover:bg-red-50
-                               dark:text-red-400 dark:hover:bg-red-900/20"
-                    aria-label="Delete"
-                  >
-                    Delete
-                  </button>
+                  <button onClick={() => deleteTodo(todo.id)} className="text-red-600">Delete</button>
                 </li>
               ))}
             </ul>

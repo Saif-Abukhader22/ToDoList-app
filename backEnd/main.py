@@ -17,6 +17,8 @@ from backEnd.schemas import User  # your Pydantic UserOut/User type
 
 from .ai_routes import router as ai_router
 
+app.include_router(ai_router)
+
 app = FastAPI()
 
 ALLOWED_ORIGINS = [

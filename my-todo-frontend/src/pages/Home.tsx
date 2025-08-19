@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../api";
 import { useAuth } from "../AuthContext";
+import Spinner from "../Spinner";
 
 type Todo = { id: number; title: string; done: boolean };
 type Filter = "all" | "active" | "done";
@@ -11,6 +12,7 @@ export default function Home() {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [newTitle, setNewTitle] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
+  const [breakdownLoading, setBreakdownLoading] = useState(false);
 
   // AI
   const [aiLoading, setAiLoading] = useState(false);
@@ -115,6 +117,7 @@ export default function Home() {
 
   // AI: Breakdown todo
   const breakdownTodo = async (task: string) => {
+    setBreakdownLoading(true);
     try {
       const res = await api.post<{ subtasks: string }>("/ai/breakdown", { task });
       alert("AI suggested subtasks:\n\n" + res.data.subtasks);
@@ -122,6 +125,9 @@ export default function Home() {
       console.error("AI breakdown failed", err);
       alert("Failed to generate subtasks.");
     }
+     finally {
+    setBreakdownLoading(false);
+  }
   };
 
   // Filtering + stats
@@ -238,8 +244,12 @@ export default function Home() {
                     <span className={todo.done ? "line-through text-slate-400" : "text-slate-800 dark:text-slate-100"}>{todo.title}</span>
                   </label>
                   <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition">
-                    <button onClick={() => breakdownTodo(todo.title)} className="rounded-lg px-2 py-1 text-sm font-semibold text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/20">
-                      ✨ Break Down
+                    <button
+                      onClick={() => breakdownTodo(todo.title)}
+                      className="ml-2 flex items-center justify-center rounded-lg px-2 py-1 text-sm font-semibold text-blue-600 hover:bg-blue-50
+                      dark:text-blue-400 dark:hover:bg-blue-900/20"
+                      disabled={breakdownLoading} >
+                      {breakdownLoading ? <Spinner /> : "Breakdown"}
                     </button>
                     <button onClick={() => deleteTodo(todo.id)} className="rounded-lg px-2 py-1 text-sm font-semibold text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20">
                       Delete

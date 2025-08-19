@@ -124,10 +124,9 @@ export default function Home() {
     } catch (err) {
       console.error("AI breakdown failed", err);
       alert("Failed to generate subtasks.");
+    } finally {
+      setBreakdownLoading(false);
     }
-     finally {
-    setBreakdownLoading(false);
-  }
   };
 
   // Filtering + stats
@@ -147,6 +146,9 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 text-slate-900
                     dark:from-slate-950 dark:via-slate-950 dark:to-slate-900 dark:text-slate-100">
+
+      {/* Fullscreen Spinner Overlay */}
+      {breakdownLoading && <Spinner />}
 
       {/* Mobile top bar */}
       <div className="lg:hidden sticky top-0 z-30 flex items-center justify-between border-b border-gray-200 bg-white/80 px-4 py-3 backdrop-blur
@@ -249,7 +251,7 @@ export default function Home() {
                       className="ml-2 flex items-center justify-center rounded-lg px-2 py-1 text-sm font-semibold text-blue-600 hover:bg-blue-50
                       dark:text-blue-400 dark:hover:bg-blue-900/20"
                       disabled={breakdownLoading} >
-                      {breakdownLoading ? <Spinner /> : "Breakdown"}
+                      Breakdown
                     </button>
                     <button onClick={() => deleteTodo(todo.id)} className="rounded-lg px-2 py-1 text-sm font-semibold text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20">
                       Delete
